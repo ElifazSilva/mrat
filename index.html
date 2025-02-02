@@ -1,12 +1,139 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-    <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Mrat</title>
-    </head>
-    <body>
-        <h1>Meu site</h1>
-    </body>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico Waterfall com Seta em U Invertido</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        #waterfallChart {
+            width: 80%;
+            max-width: 900px;
+            height: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border: 2px solid #ccc;
+        }
+        h2 {
+            color: #333;
+        }
+        .legend-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        .legend-box {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        .green { background-color: #2ECC71; }
+        .red { background-color: #FF4B4B; }
+        .blue { background-color: #3498DB; }
+    </style>
+</head>
+<body>
+    <h2>📊 Gráfico Waterfall Personalizado com Seta em U Invertido</h2>
+    <div id="waterfallChart"></div>
+
+    <div class="legend-container">
+        <div class="legend-item"><div class="legend-box green"></div> Ganho</div>
+        <div class="legend-item"><div class="legend-box red"></div> Perda</div>
+        <div class="legend-item"><div class="legend-box blue"></div> Total</div>
+    </div>
+
+    <script>
+        var labels = ["Start", "Revenue", "Expenses", "Profit", "Tax", "End"];
+        var values = [200, 300, -150, 400, -200, 100];
+
+        var totalGanhoPerda = values.reduce((acc, val) => acc + val, 0); // Soma total
+        var totalLabel = totalGanhoPerda > 0 ? `Total de Ganho: +${totalGanhoPerda}` : `Total de Perda: ${totalGanhoPerda}`;
+        var totalColor = totalGanhoPerda > 0 ? "#2ECC71" : "#FF4B4B";
+
+        var maxY = Math.max(...values) + 100; // Definir a altura da seta
+
+        var midX = labels[Math.floor(labels.length / 2)]; // Ponto do meio para o texto
+
+        var data = [{
+            type: "waterfall",
+            name: "Waterfall Chart",
+            measure: ["absolute", "relative", "relative", "relative", "relative", "total"],
+            x: labels,
+            y: values,
+            text: values.map(v => v > 0 ? `+${v}` : `${v}`),
+            textposition: "outside",
+            connector: { line: { color: "rgba(100, 100, 100, 0.5)" } },
+            decreasing: { marker: { color: "#FF4B4B" } },
+            increasing: { marker: { color: "#2ECC71" } },
+            totals: { marker: { color: "#3498DB" } },
+        },
+        {
+            // 🔴 Criando a seta em "U" invertido
+            type: "scatter",
+            mode: "lines+text",
+            x: [labels[0], labels[0], midX, labels[5], labels[5]], // Ponto inicial, subida, meio, descida
+            y: [values[0], maxY, maxY, maxY, values[5]], // Movimento vertical e horizontal
+            line: {
+                color: totalColor,
+                width: 2,
+                shape: "spline" // 🔴 Criando curva suavizada nas pontas
+            },
+            text: ["", "", totalLabel, "", ""], // Exibir label no meio da seta
+            textposition: "top center",
+            textfont: { size: 16, color: totalColor }
+        },
+        {
+            // 🔴 Criando as setas nas extremidades
+            type: "scatter",
+            mode: "markers",
+            x: [labels[0], labels[5]], // Posição inicial e final
+            y: [maxY, maxY],
+            marker: {
+                size: 12,
+                color: totalColor,
+                symbol: ["arrow-up", "arrow-down"] // 🔴 Setas para cima no início e para baixo no fim
+            }
+        }];
+
+        var layout = {
+            title: { text: "Gráfico Waterfall - Estilizado", font: { size: 20, color: "#333" } },
+            xaxis: { 
+                title: "",  
+                tickangle: -15, 
+                showgrid: false 
+            },
+            yaxis: { 
+                title: "",  
+                zeroline: false, 
+                gridcolor: "rgba(200, 200, 200, 0.3)", 
+                showticklabels: false,  
+                showgrid: false 
+            },
+            plot_bgcolor: "white",
+            paper_bgcolor: "white",
+            font: { family: "Arial, sans-serif", size: 14 },
+            margin: { l: 60, r: 20, t: 50, b: 50 },
+            showlegend: false 
+        };
+
+        Plotly.newPlot("waterfallChart", data, layout, { responsive: true });
+    </script>
+</body>
 </html>
